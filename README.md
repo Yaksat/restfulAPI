@@ -7,60 +7,78 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+## RestFul API
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+# /api/register
+ 
+[POST] in body:
+- name
+- last_name
+- email
+- password
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+  Response: {"error":null,"result":{"token":"4|okqhx7dZGCmc0GgmpaToR1K9FAOIJUjeWFfHp1bG"}}
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+# /api/login
+[POST] in body:
+- email
+- password
 
-## Learning Laravel
+Response: {"error":null,"result":{"token":"4|okqhx7dZGCmc0GgmpaToR1K9FAOIJUjeWFfHp1bG"}}
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+# /api/logout
+[GET] Authotization -> Bearer Token
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Response: {"error":null,"result":{"data":"User Logout successfully."}}
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# /api/create_event
+[POST] Authotization -> Bearer Token
 
-## Laravel Sponsors
+in body:
+- title
+- text
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+Response: {"error":null,"result":{"id":2,"title":"event2","text":"text event2"}}
 
-### Premium Partners
+# /api/events
+[GET] Authotization -> Bearer Token
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+Response: {
+"error": null,
+"result": [
+{
+"id": 1,
+"title": "title event",
+"text": "text event",
+"creator_id": 1,
+"created_at": "2023-06-24T16:19:11.000000Z",
+"updated_at": "2023-06-24T16:19:11.000000Z"
+},
+{
+"id": 2,
+"title": "event2",
+"text": "text event2",
+"creator_id": 1,
+"created_at": "2023-06-24T17:16:11.000000Z",
+"updated_at": "2023-06-24T17:16:11.000000Z"
+}
+]
+}
 
-## Contributing
+# /api/participate/2 (participate/{event})
+участие в событии
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+[GET] Authotization -> Bearer Token
+{"error":null,"result":"success"}
 
-## Code of Conduct
+# /api/remove_participant/2 (remove_participant/{event})
+отмена участия в событии
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+[GET] Authotization -> Bearer Token
+{"error":null,"result":"success"}
 
-## Security Vulnerabilities
+# /api/events/2 (events/{event})
+удаление события создателем
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+[DELETE] Authotization -> Bearer Token
+{"error":null,"result":"success"}
