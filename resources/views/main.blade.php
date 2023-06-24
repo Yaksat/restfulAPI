@@ -74,17 +74,19 @@
             <div class="row">
                 <div class="col">
                     <h3>Все события</h3>
-                    @foreach($events as $event)
-                            <?php $isMember = false; ?>
-                        @foreach($event->members as $member)
-                            @if($member->id == auth()->id())
-                                    <?php $isMember = true; ?>
-                            @endif
+                    <div id="event-list">
+                        @foreach($events as $event)
+                                <?php $isMember = false; ?>
+                            @foreach($event->members as $member)
+                                @if($member->id == auth()->id())
+                                        <?php $isMember = true; ?>
+                                @endif
+                            @endforeach
+                            <div><a class="text-primary"
+                                    onclick="showEvent('{{ $event->id }}', '{{ $event->title }}', '{{ $event->text }}', '{{ $event->created_at }}',  {{ $event->members }}, {{ $isMember }})">{{ $event->title }}</a>
+                            </div>
                         @endforeach
-                        <div><a class="text-primary"
-                                onclick="showEvent('{{ $event->title }}', '{{ $event->text }}', '{{ $event->created_at }}',  {{ $event->members }}, {{ $isMember }})">{{ $event->title }}</a>
-                        </div>
-                    @endforeach
+                    </div>
                     <h3>Мои события</h3>
                     @foreach($myEvents as $myEvent)
                             <?php $isMember = false; ?>
@@ -94,7 +96,7 @@
                             @endif
                         @endforeach
                         <div><a class="text-primary"
-                                onclick="showEvent('{{ $myEvent->title }}', '{{ $myEvent->text }}', '{{ $myEvent->created_at }}', {{ $myEvent->members }}, {{ $isMember }})">{{ $myEvent->title }}</a>
+                                onclick="showEvent('{{ $event->id }}', '{{ $myEvent->title }}', '{{ $myEvent->text }}', '{{ $myEvent->created_at }}', {{ $myEvent->members }}, {{ $isMember }})">{{ $myEvent->title }}</a>
                         </div>
                     @endforeach
                 </div>
@@ -108,11 +110,11 @@
                     <h3 class="members_title" id="members_title">Участники</h3>
                     <div class="members_list"></div>
 
-                    <button style="display: none" id="join_button" onclick="joinEvent('{{ $event->id }}')">Принять
+                    <button style="display: none" id="join_button" onclick="joinEvent(eventId)">Принять
                         участие
                     </button>
 
-                    <button style="display: none" id="leave_button" onclick="leaveEvent('{{ $event->id }}')">Отказаться от участия
+                    <button style="display: none" id="leave_button" onclick="leaveEvent(eventId)">Отказаться от участия
                     </button>
 
                 </div>
@@ -157,6 +159,7 @@
 <script src="{{ asset('adminlte/plugins/select2/js/select2.full.min.js') }}"></script>
 <script>
     var eventMembersAll = [];
+    var eventId;
 
     function updateMemberInfo(memberId) {
         var member = eventMembersAll.find(function (member) {
@@ -175,13 +178,14 @@
         updateMemberInfo(memberId);
     });
 
-    function showEvent(eventTitle, eventText, eventData, eventMembers, isMember) {
+    function showEvent(eventId, eventTitle, eventText, eventDate, eventMembers, isMember) {
         $('.title_event').text(eventTitle);
         $('.text_event').text(eventText);
-        $('.date_event').text(eventData);
+        $('.date_event').text(eventDate);
         $('.members_list').html('');
         $('#member-info').hide();
         eventMembersAll = eventMembers;
+        window.eventId = eventId;
 
         var membersTitle = document.getElementById("members_title");
         membersTitle.style.display = "block";
@@ -217,8 +221,12 @@
             data: {
                 eventId: eventId
             },
-            success: function(response) {
-                console.log(response);
+            success: function(data) {
+                var joinButton = document.getElementById("join_button");
+                var leaveButton = document.getElementById("leave_button");
+                joinButton.style.display = "none";
+                leaveButton.style.display = "block";
+                showEvent(data.eventId, data.eventTitle, data.eventText, data.eventDate, data.eventMembers, data.isMember)
             },
             error: function(xhr, status, error) {
                 console.error(error);
@@ -227,6 +235,7 @@
     }
 
     function leaveEvent(eventId) {
+        console.log(eventId)
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -239,14 +248,48 @@
             data: {
                 eventId: eventId
             },
-            success: function(response) {
-                console.log(response);
+            success: function(data) {
+                var joinButton = document.getElementById("join_button");
+                var leaveButton = document.getElementById("leave_button");
+                joinButton.style.display = "block";
+                leaveButton.style.display = "none";
+                showEvent(data.eventId, data.eventTitle, data.eventText, data.eventDate, data.eventMembers, data.isMember)
             },
             error: function(xhr, status, error) {
                 console.error(error);
             }
         });
     }
+
+    function updateEventList() {
+        $.ajax({
+            url: '/events',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                var eventList = $('#event-list');
+                eventList.empty();
+                $.each(data.events, function(i, event) {
+                    var isMember = false;
+                    $.each(event.members, function(j, member) {
+                        if (member.id == data.currentUserId) {
+                            isMember = true;
+                        }
+                    });
+                    var link = $('<a>').addClass('text-primary')
+                        .attr('onclick', `showEvent('${event.id}', '${event.title}', '${event.text}', '${event.created_at}', ${JSON.stringify(event.members)}, ${isMember})`)
+                        .text(event.title);
+                    var item = $('<div>').append(link);
+                    eventList.append(item);
+                });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Ошибка при обновлении списка событий: ', errorThrown);
+            }
+        });
+    }
+
+    setInterval(updateEventList, 10000);
 </script>
 </body>
 </html>

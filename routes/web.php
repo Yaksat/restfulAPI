@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->middleware('auth:sanctum');
 Route::POST('/join-event', [App\Http\Controllers\EventController::class, 'joinEvent'])->middleware('auth:sanctum');
 Route::POST('/leave-event', [App\Http\Controllers\EventController::class, 'leaveEvent'])->middleware('auth:sanctum');
+Route::get('/events', [App\Http\Controllers\EventController::class, 'updateEvents'])->middleware('auth:sanctum');
 
 
 Auth::routes();

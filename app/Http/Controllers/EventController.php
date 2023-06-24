@@ -83,7 +83,14 @@ class EventController extends Controller
 
         $event->members()->syncWithoutDetaching($user);
 
-        return Response(['error' => null, 'result' => 'success'],200);
+        return response()->json([
+            'eventId' => $event->id,
+            'eventTitle' => $event->title,
+            'eventText' => $event->text,
+            'eventDate' => $event->created_at,
+            'eventMembers' => $event->members,
+            'isMember' => $event->members()->where('user_id', $user->id)->exists(),
+        ]);
     }
 
     public function leaveEvent(Request $request)
@@ -98,6 +105,45 @@ class EventController extends Controller
 
         $event->members()->detach($user);
 
-        return Response(['error' => null, 'result' => 'success'],200);
+        return response()->json([
+            'eventId' => $event->id,
+            'eventTitle' => $event->title,
+            'eventText' => $event->text,
+            'eventDate' => $event->created_at,
+            'eventMembers' => $event->members,
+            'isMember' => $event->members()->where('user_id', $user->id)->exists(),
+        ]);
+    }
+
+    public function updateEvents()
+    {
+        $events = Event::all();
+
+        $currentUser = auth()->user();
+
+        $eventArray = [];
+        foreach ($events as $event) {
+            $memberArray = [];
+            foreach ($event->members as $member) {
+                $memberArray[] = [
+                    'id' => $member->id,
+                    'name' => $member->name,
+                    'last_name' => $member->last_name,
+                ];
+            }
+            $eventArray[] = [
+                'id' => $event->id,
+                'title' => $event->title,
+                'text' => $event->text,
+                'created_at' => $event->created_at->toIso8601String(),
+                'members' => $memberArray,
+                'is_member' => $event->members()->where('user_id', $currentUser->id)->exists(),
+            ];
+        }
+
+        return response()->json([
+            'events' => $eventArray,
+            'currentUserId' => $currentUser->id,
+        ]);
     }
 }
