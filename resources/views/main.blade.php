@@ -4,9 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>AdminLTE 3 | Dashboard</title>
-
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <!-- Select2 -->
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/select2/css/select2.min.css') }}">
     <!-- Font Awesome -->
@@ -74,23 +75,27 @@
                 <div class="col">
                     <h3>Все события</h3>
                     @foreach($events as $event)
-                        <?php $isMember = false; ?>
+                            <?php $isMember = false; ?>
                         @foreach($event->members as $member)
                             @if($member->id == auth()->id())
                                     <?php $isMember = true; ?>
                             @endif
                         @endforeach
-                        <div><a class="text-primary" onclick="showEvent('{{ $event->title }}', '{{ $event->text }}', '{{ $event->created_at }}',  {{ $event->members }}, {{ $isMember }})">{{ $event->title }}</a></div>
+                        <div><a class="text-primary"
+                                onclick="showEvent('{{ $event->title }}', '{{ $event->text }}', '{{ $event->created_at }}',  {{ $event->members }}, {{ $isMember }})">{{ $event->title }}</a>
+                        </div>
                     @endforeach
                     <h3>Мои события</h3>
                     @foreach($myEvents as $myEvent)
-                        <?php $isMember = false; ?>
+                            <?php $isMember = false; ?>
                         @foreach($myEvent->members as $member)
                             @if($member->id == auth()->id())
                                     <?php $isMember = true; ?>
                             @endif
                         @endforeach
-                        <div><a class="text-primary" onclick="showEvent('{{ $myEvent->title }}', '{{ $myEvent->text }}', '{{ $myEvent->created_at }}', {{ $myEvent->members }}, {{ $isMember }})">{{ $myEvent->title }}</a></div>
+                        <div><a class="text-primary"
+                                onclick="showEvent('{{ $myEvent->title }}', '{{ $myEvent->text }}', '{{ $myEvent->created_at }}', {{ $myEvent->members }}, {{ $isMember }})">{{ $myEvent->title }}</a>
+                        </div>
                     @endforeach
                 </div>
                 <div class="col d-flex align-items-center">
@@ -103,7 +108,12 @@
                     <h3 class="members_title" id="members_title">Участники</h3>
                     <div class="members_list"></div>
 
-                        <button style="display: none" id="join_button" onclick="joinEvent('{{ $event->id }}')">Принять участие</button>
+                    <button style="display: none" id="join_button" onclick="joinEvent('{{ $event->id }}')">Принять
+                        участие
+                    </button>
+
+                    <button style="display: none" id="leave_button" onclick="leaveEvent('{{ $event->id }}')">Отказаться от участия
+                    </button>
 
                 </div>
                 <div class="col d-flex align-items-center">
@@ -149,7 +159,7 @@
     var eventMembersAll = [];
 
     function updateMemberInfo(memberId) {
-        var member = eventMembersAll.find(function(member) {
+        var member = eventMembersAll.find(function (member) {
             return member.id == memberId;
         });
 
@@ -159,7 +169,7 @@
         $('#member-info').show();
     }
 
-    $('.members_list').on('click', '.member-link', function() {
+    $('.members_list').on('click', '.member-link', function () {
         console.log(1111)
         var memberId = $(this).data('id');
         updateMemberInfo(memberId);
@@ -176,12 +186,15 @@
         var membersTitle = document.getElementById("members_title");
         membersTitle.style.display = "block";
 
-        var joinButton= document.getElementById("join_button");
+        var joinButton = document.getElementById("join_button");
+        var leaveButton = document.getElementById("leave_button");
 
         if (isMember) {
             joinButton.style.display = "none";
+            leaveButton.style.display = "block";
         } else {
             joinButton.style.display = "block";
+            leaveButton.style.display = "none";
         }
 
         for (var i = 0; i < eventMembers.length; i++) {
@@ -189,6 +202,50 @@
             var memberHtml = '<div><a class="text-primary member-link" data-id="' + member.id + '">' + member.name + ' ' + member.last_name + '</a></div>';
             $('.members_list').append(memberHtml);
         }
+    }
+
+    function joinEvent(eventId) {
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        $.ajax({
+            url: '/join-event',
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                eventId: eventId
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
+            }
+        });
+    }
+
+    function leaveEvent(eventId) {
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        $.ajax({
+            url: '/leave-event',
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                eventId: eventId
+            },
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
+            }
+        });
     }
 </script>
 </body>

@@ -71,4 +71,33 @@ class EventController extends Controller
         }
     }
 
+    public function joinEvent(Request $request)
+    {
+        $validated = $request->validate([
+            'eventId' => 'required|integer'
+        ]);
+
+        $user = Auth::user();
+
+        $event = Event::find($validated['eventId']);
+
+        $event->members()->syncWithoutDetaching($user);
+
+        return Response(['error' => null, 'result' => 'success'],200);
+    }
+
+    public function leaveEvent(Request $request)
+    {
+        $validated = $request->validate([
+            'eventId' => 'required|integer'
+        ]);
+
+        $user = Auth::user();
+
+        $event = Event::find($validated['eventId']);
+
+        $event->members()->detach($user);
+
+        return Response(['error' => null, 'result' => 'success'],200);
+    }
 }
